@@ -32,7 +32,7 @@
 
 void hello()
 {
-	std::cout << "Hello concurrent World\n";
+	std::cout << "Autobots, thread out \n";
 }
 
 int main()
