@@ -237,3 +237,51 @@ as template parameters and a list of mutexes as
 constructor arguments.
 
 ## Synchronizing concurrent operations
+In multithreaded applications protecting your data
+is one of the fundamentals, in this sections we
+will dive into the different mechansims for synchronizing
+threads.
+
+One thread might need to wait for another thread to complete
+a task before the first thread can complete its own.
+
+It is also common to want a thread to wait for a specific
+event to happen or a condition to be true.
+
+The C++ STL provides facilities to support/provide
+synchronization in the form of
+    1. Conditional Variables
+    2. Futures
+
+### Waiting for a condition with conditional variables.
+
+#### Scenario: Decepticon Sightings Queue
+
+    - Sensors detect Decepticons and push enemy data 
+      (like location or type) into a shared queue.
+    - A ThreatAnalysisSystems consumes teh queue to
+      analyze and prioritze threats.
+    - We will use this challenge to simulate a 
+      producer-consumer synchronization using a queue.
+        - Multiple sensor threads produce sightings.
+        - A single consumer thread pulls and processes
+          them.
+        - If improperly sychronized, it leads to data races,
+          or lost data     
+
+![Threading!](/assets/cv_synch.png "Hello thread")
+
+In our code above we use a Condition Variable to synchronize
+between the threatAnalysis thread and sensorInput.
+
+## Conclusion
+I really wanted to squeeze in alot more into this blog post
+but I will post a follow up on more mechanisms offered by
+C++ STL.
+
+In my next blog post I will focus on futures, the other
+synchronization mechanism. 
+
+***If you didn't grasp much from this blog post, just
+remember decepticons are the evil ones and you should always
+be rooting for the Autobots***
