@@ -285,3 +285,86 @@ synchronization mechanism.
 ***If you didn't grasp much from this blog post, just
 remember decepticons are the evil ones and you should always
 be rooting for the Autobots***
+
+## Waiting for one-off events with futures
+In the previous section we looked at using a condition
+variable as a synchronization mechanism, but what
+if we needed to wait on a one-off event.
+
+Let's explore a scenario to help us understand
+this.
+
+### Scenario: Map Loading in the Background
+#### Problem
+The map takes time to load, but the navigation
+can't start without it.
+We offload map loading to a background task, 
+and NavigationSystems waits using a std::future.
+
+![Future !](/assets/future_event.png "Future")
+
+In our code sample, startNavigation() will 
+
+If a thread needs to wait for a specific one-off
+event, it somehow obtains a future representing 
+that event.
+
+Using std::future<>, the thread can do another
+task until it needs the event to have happened
+before it can proceed and just wait for the future
+to become ready.
+
+## std::packaged_task<>
+
+`std::async<>` isn’t the only way to hook a task up to 
+a `std::future<>`. 
+You can also use `std::packaged_task<>`, 
+which basically wraps any function or callable and ties it to a future.
+
+Once you call the `packaged_task`, it runs the function and fills
+in the future with the result—ready for you to grab when you need it.
+
+For example std::packaged_task<double(double)>, takes
+a callable that returns a double and takes a double 
+as a parameter.
+
+This can be used as a building block for thread pools
+or other task management schemes, such as running each
+task on its own thread.
+
+This abstracts out the details of the  tasks; the scheduler
+just deals with std::packaged_task<> instances rather than
+individual functions.
+
+## Scenario
+Imagine Optimus Prime has a mission control system that queues
+up calculations (e.g, target trajectories, power diagnostics)
+that need to be handled by a worker thread. We wrap these in
+std::packaged_task<> and store them in a shared std::deque.
+
+### How it works
+1.Main thread creates tasks and pushes them to
+  the deque.
+2. Worker thread(s) pull them from the deque and
+  run the packaged_task.
+3. Futures are used to get results back once tasks
+   complete.
+4. Synchronization is handled with std::mutex + std::condition_variable.
+
+![Future !](/assets/synching_pkg_2.png "Future")
+
+In the workerThread() function we create an 
+task using std::packaged_task<int>;
+
+Then we obtain a lock on the mutex(queueMutex) using
+std::unique_lock.
+Using the condition variable cv we wait passing in
+the lock and a predicate as a lambda function.
+
+If the predicate returns true we contine with function
+execution else we release the lock and the thread
+waits to be notified.
+
+In the main() function we create tasks in the for loop
+and push them to our queue and we notify the waiting
+thread once we push a task to our queue.
