@@ -343,8 +343,8 @@ that need to be handled by a worker thread. We wrap these in
 std::packaged_task<> and store them in a shared std::deque.
 
 ### How it works
-1.Main thread creates tasks and pushes them to
-  the deque.
+1. Main thread creates tasks and pushes them to
+   the deque.
 2. Worker thread(s) pull them from the deque and
   run the packaged_task.
 3. Futures are used to get results back once tasks
@@ -368,3 +368,91 @@ waits to be notified.
 In the main() function we create tasks in the for loop
 and push them to our queue and we notify the waiting
 thread once we push a task to our queue.
+
+## C++17 Atomic operations and types in C++
+An atomic operation is an indivisible opertion.
+You can't observe such an operation half-done
+from any thread in the system; it's either done
+or not done.
+
+The key use case for atomic operations is as
+a replacement for an operation that would otherwise
+use a mutex for synchronization.
+
+If one operation that reads the value of an object
+is atomic, and all modifications to that object are
+also atomic, that load will retrieve the initial value
+of the object or the value stored by one of the
+modifications.
+
+## The standard atomic types
+They are supplied in the <atomic> header.
+
+Here is a table listing atomic types available
+in the C++17 Standard.
+![Future !](/assets/atomic_types.jpg "Future")
+The standard atomic types are not copyable or 
+assignable in the conventional sense, they have
+no copy constructors or copy assignment operators.
+
+Here is a list of operations on atomic types
+1. test_and_set
+2. clear
+3. load
+4. store
+5. exchange
+6. compare_exchange_weak
+7. compare_exchange_strong
+8. fetch_add, +=
+9. fetch_sub, -=
+10. fetch_or, |=
+11. fetch_and, &=
+12. fetch_xor, ^=
+13. ++, --
+
+Each of the operations on atomic types has an
+optional memory-ordering argument which is one
+of the values of the st::memory_order enumeration.
+
+Here is a list of the available memory-ordering
+options:
+1. memory_order_relaxed
+2. memory_order_release
+3. memory_order_seq_cst
+4. memory_order_consume
+5. memory_order_acquire
+6. memory_order_acq_rel
+
+## Weapons Cooldown Timer
+### Scenario
+Optimus Prime has a high powered plasma cannon that needs
+to cool down after firing. The targeting system
+must know whether the cannon is ready again.
+
+### System
+1. std::atomic<int> cooldownCounter.
+1. Updated by the WeaponsFiringSystem.
+1. Read by the TargetSystem.
+
+![Atomic example !](/assets/atomic_ops.png "Weapons sytems")
+
+#### Breakdown
+1. std::atomic<int> protects the shared state (countdownCounter) 
+   without mutexes.
+1. Cooldown runs in the background thread ticking down every
+   second.
+1. fireWeapons() reads from the atomic and acts accordingly.
+
+## Conclusion
+In C++ atomics are used in designing lock-free data-structures.
+
+I hope you found this educational as well as entertaining, the
+series still continues with more concepts to illustrate and
+breakdown.
+
+In our next article we will explore what is happening in 
+memory,we will look into caches, memory barriers, cache
+lines and more.
+
+Thank you!!
+
